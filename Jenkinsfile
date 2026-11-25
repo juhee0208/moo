@@ -1,6 +1,8 @@
 // MOO CI/CD 파이프라인 (Multibranch Pipeline 기준)
 // 사전 준비: 'docker-mobile-agent' Agent, Credentials 'docker-registry' / 'staging-ssh-key'
 // 스테이징 서버에는 infra/ 내용을 /opt/moo/ 에 복사하고 .env 를 채워 둔다.
+// 운영 서버는 Oracle Cloud Arm(D63) → API 이미지는 linux/arm64 로 빌드한다.
+// Agent가 amd64 라면 최초 1회: docker run --privileged --rm tonistiigi/binfmt --install arm64
 
 pipeline {
     agent { label 'docker-mobile-agent' }
@@ -17,15 +19,15 @@ pipeline {
         FLUTTER_IMAGE = 'ghcr.io/cirruslabs/flutter:YOUR_PINNED_TAG' // 프로젝트 Flutter 버전으로 고정
         STAGING_HOST  = 'deploy@staging.example.com'
         STAGING_API   = 'https://stg-api.example.com'
+        API_PLATFORM  = 'linux/arm64'
+        TRIVY_IMAGE   = 'aquasec/trivy:0.76.2'
     }
 
     stages {
+        // Dockerfile 의 test 스테이지 = 운영 이미지와 같은 Node 베이스에서 테스트
         stage('Backend Test') {
             steps {
-                sh '''
-                    docker run --rm -v "$WORKSPACE/backend:/work" -w /work node:24-alpine \
-                      sh -lc 'npm ci && npm test'
-                '''
+                sh 'docker build --progress=plain --target test ./backend'
             }
         }
 
@@ -58,7 +60,25 @@ pipeline {
 
         stage('Backend Docker Build') {
             steps {
-                sh 'docker build --pull -t "$IMAGE_REPO:$IMAGE_TAG" ./backend'
+                sh '''
+                    docker buildx build --pull --load \
+                      --platform "$API_PLATFORM" \
+                      --target runtime \
+                      --build-arg GIT_SHA="$GIT_COMMIT" \
+                      -t "$IMAGE_REPO:$IMAGE_TAG" \
+                      ./backend
+                '''
+            }
+        }
+
+        // HIGH/CRITICAL 중 수정 버전이 있는 취약점이 있으면 실패
+        stage('Image Scan') {
+            steps {
+                sh '''
+                    docker run --rm -v /var/run/docker.sock:/var/run/docker.sock "$TRIVY_IMAGE" \
+                      image --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed \
+                      "$IMAGE_REPO:$IMAGE_TAG"
+                '''
             }
         }
 

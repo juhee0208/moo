@@ -75,6 +75,7 @@ moo/
 │   │   ├── server.js             # 실행 진입점, 종료 시 연결 정리
 │   │   ├── config/env.js         # 환경변수 읽기
 │   │   ├── db/pool.js            # PostgreSQL 연결 풀
+│   │   ├── db/migrate.js         # 마이그레이션 실행 (node-pg-migrate)
 │   │   ├── middlewares/          # 인증, 에러 핸들러
 │   │   ├── common/               # 공통 에러·응답 유틸
 │   │   └── modules/              # 도메인 단위 (각각 *.routes.js · *.service.js · *.repository.js)
@@ -84,9 +85,9 @@ moo/
 │   │       ├── groups/           # 그룹 CRUD, 그룹-맛집 저장, 멤버 권한
 │   │       ├── invites/          # 초대 링크 발급·재발급·resolve·참여, 대기 초대
 │   │       └── search/           # 키워드 검색(카카오 프록시)
-│   ├── migrations/               # DB 스키마 변경 이력
+│   ├── migrations/               # DB 스키마 변경 이력 (SQL, node-pg-migrate)
 │   ├── test/                     # node --test (단위), integration/ (실제 PostgreSQL)
-│   ├── Dockerfile
+│   ├── Dockerfile                # deps → test → runtime 멀티 스테이지, linux/arm64 배포
 │   ├── .dockerignore
 │   └── package.json / package-lock.json
 │
@@ -94,12 +95,12 @@ moo/
 │   ├── compose.prod.yaml         # 운영 Compose (API는 Registry 이미지 사용)
 │   ├── nginx/moo-api.conf        # HTTPS 리버스 프록시 템플릿
 │   └── scripts/
-│       ├── deploy.sh             # 이미지 pull → api 재기동
+│       ├── deploy.sh             # 이미지 pull → 마이그레이션 → api 교체 → healthy 대기
 │       └── backup-db.sh          # pg_dump 백업 (cron)
 │
 ├── compose.yaml                  # 로컬 개발용 (postgres + api)
 ├── .env.example                  # 환경변수 예시 → .env 로 복사
-├── Jenkinsfile                   # 테스트 → 빌드 → 이미지 push → 스테이징 배포 → smoke test
+├── Jenkinsfile                   # 테스트 → 빌드 → 이미지 검사 → push → 스테이징 배포 → smoke test
 └── README.md
 ```
 
@@ -113,10 +114,19 @@ curl http://localhost:3000/health   # {"status":"ok","database":"connected"}
 
 종료는 `docker compose down`. `down -v` 는 DB 볼륨까지 삭제한다.
 
+## DB 마이그레이션
+
+```bash
+cd backend && npm run migrate:create -- create-users   # migrations/<timestamp>_create-users.sql 생성
+docker compose run --rm api node src/db/migrate.js     # 적용 (운영 이미지에는 npm 이 없다)
+```
+
+운영 배포 시에는 `infra/scripts/deploy.sh` 가 API 교체 전에 자동으로 실행한다. 실패하면 API는 이전 버전 그대로 남는다.
+
 ## 테스트
 
 ```bash
-cd backend && npm test
+cd backend && npm test                                 # 또는 docker build --target test ./backend
 cd app && flutter analyze && flutter test   # Flutter 프로젝트 생성 후
 ```
 

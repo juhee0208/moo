@@ -1,6 +1,12 @@
 # 스테이징/운영 서버용. 서버의 /opt/moo/ 에 이 파일과 .env 를 둔다.
-# 배포: API_IMAGE=<registry>/moo-api:<tag> docker compose -f compose.prod.yaml up -d api
+# 배포는 scripts/deploy.sh <API_IMAGE> 로 한다. (pull → migrate → up)
 name: moo
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
 
 services:
   postgres:
@@ -18,12 +24,12 @@ services:
       retries: 10
     networks:
       - db-net
+    logging: *default-logging
     restart: unless-stopped
 
   api:
     image: ${API_IMAGE:?API_IMAGE is required}
     environment:
-      NODE_ENV: production
       PORT: 3000
       DB_HOST: postgres
       DB_PORT: 5432
@@ -35,14 +41,17 @@ services:
         condition: service_healthy
     ports:
       - "127.0.0.1:3000:3000" # 외부 요청은 호스트의 Nginx(HTTPS)가 받아서 전달
-    healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
+    # healthcheck 는 이미지(Dockerfile HEALTHCHECK)에 들어 있다
+    init: true # 종료 신호 전달 · 좀비 프로세스 정리
+    read_only: true # 컨테이너 파일 시스템 쓰기 금지 (사진 업로드 등은 별도 volume 으로)
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
     networks:
       - app-net
       - db-net
+    logging: *default-logging
     restart: unless-stopped
 
 volumes:
