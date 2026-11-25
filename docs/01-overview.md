@@ -2,7 +2,7 @@
 
 ## 1. 서비스 정의
 
-MOOH는 사용자가 맛집을 지도·검색으로 탐색하고 저장한 뒤, 목적에 따라 그룹으로 관리하고 초대한 친구와 함께 편집하는 맛집 지도 앱이다.
+MOOH는 사용자가 맛집을 검색해 저장한 뒤, 목적에 따라 그룹으로 관리하고 초대한 친구와 함께 편집하는 맛집 지도 앱이다.
 
 - **배경**: 맛집 정보는 검색·지도·SNS에 흩어져 있어, 다시 가고 싶은 곳을 정리하거나 친구와 같이 관리하기 어렵다.
 - **가설**: 맛집을 발견한 직후 1~2단계 안에 그룹에 저장할 수 있고, 친구와 같은 목록을 편집할 수 있으면 저장·재방문 행동이 늘어난다.
@@ -10,7 +10,7 @@ MOOH는 사용자가 맛집을 지도·검색으로 탐색하고 저장한 뒤, 
 
 ## 2. 핵심 경험
 
-`맛집 탐색(검색/지도) → 그룹에 저장 → 초대 링크로 공유 → 멤버와 공동 관리`
+`맛집 검색 → 그룹에 저장 → 카카오톡으로 초대 → 멤버와 공동 관리`
 
 ## 3. 서비스 범위
 
@@ -55,6 +55,7 @@ Group Home
 ├─ Group Create
 └─ Group Detail
    ├─ 맛집 탭 / 멤버 탭
+   ├─ [맛집 추가] → Search (추가 모드, D78)
    ├─ Group Map (TODO: 좌표 저장 허용 시)
    ├─ Group Edit
    └─ Group Invite (생성자 전용)
@@ -62,9 +63,9 @@ My
 ├─ Invite Inbox ("mooh: 초대장")
 ├─ 친구 초대하기 (OS 공유 시트)
 ├─ Notifications (알림함)
-├─ Notice List → Notice Detail (공지사항)
+├─ 공지사항 (네이버 블로그 링크, D57)
 ├─ FAQ
-├─ Settings (환경설정) → Withdraw
+├─ Settings (환경설정: 회원 탈퇴 · 앱 버전 · 오픈소스 라이선스, D84) → Withdraw
 └─ Profile Edit
 ```
 
@@ -78,7 +79,7 @@ My
 | `MOOHAPP_SIGNUP_TERMS` | 신규 가입 약관 | auth |
 | `MOOHAPP_HOME` | 홈 | home |
 | `MOOHAPP_FRIEND_GROUPS_BS` | 함께 참여 중인 그룹 바텀시트 | home |
-| `MOOHAPP_SEARCH` | 통합 검색 | search-place |
+| `MOOHAPP_SEARCH` | 통합 검색 (`[음식점] [카페]` 탭, 추가 모드) | search-place |
 | `MOOHAPP_PLACE_DETAIL` | 맛집 상세 | search-place |
 | `MOOHAPP_GROUP_SELECT_BS` | 그룹 선택 바텀시트 | search-place |
 | `MOOHAPP_GROUP_HOME` | 그룹 홈 | group |
@@ -94,20 +95,18 @@ My
 | `MOOHAPP_SETTINGS` | 환경설정 | my |
 | `MOOHAPP_PROFILE_EDIT` | 프로필 수정 | my |
 | `MOOHAPP_WITHDRAW` | 회원 탈퇴 | my |
-| `MOOHAPP_NOTICE_LIST` | 공지사항 목록 — ✕ 블로그 링크로 대체 (D57) | my |
-| `MOOHAPP_NOTICE_DETAIL` | 공지사항 상세 — ✕ 블로그 링크로 대체 (D57) | my |
 | `MOOHAPP_FAQ` | FAQ | my |
 
 ## 8. 공통 UI 컴포넌트
 
-Search Bar · Hero Banner · Inline Banner · Group Card · Place Card · Member Avatar · Group Tag · Shared Badge · Save Button · Map Marker · Bottom Navigation · Bottom Sheet · Full Popup · Confirmation Dialog · Toast · Empty State · Skeleton · Spinner
+Search Bar · Hero Banner · Inline Banner · Group Card · Place Card · Member Avatar · Group Tag · Shared Badge · Save Button · Map Marker(그룹 지도 TODO) · Bottom Navigation · Bottom Sheet · Full Popup · Confirmation Dialog · Toast · Empty State · Skeleton · Spinner
 
 ## 9. 공통 UX 규칙
 
 - 하위 화면은 Stack(Push)으로 진입. 선택·입력 보조 기능은 Bottom Sheet / Full Popup / Dialog
 - 입력 화면에서 닫기·뒤로가기 시 **이탈 확인 Dialog 없음**, 입력값 폐기, 임시 저장 없음
 - 서버 변경 요청 중에는 CTA 로딩 상태 + 중복 터치 차단
-- 이전 화면 복귀 시 검색어·스크롤·지도 위치 유지
+- 이전 화면 복귀 시 검색어·검색 탭·스크롤 유지
 - 권한이 없는 기능은 노출하지 않거나 비활성화
 - 빈 화면에는 캐릭터 + 안내 문구 + 다음 행동 CTA 제공
-- 로딩: 홈/목록은 스켈레톤, 지도는 로딩 인디케이터, 버튼은 Spinner
+- 로딩: 홈/목록은 스켈레톤, 버튼은 Spinner

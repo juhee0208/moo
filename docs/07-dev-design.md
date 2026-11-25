@@ -1,8 +1,8 @@
 # 07. 개발 설계서
 
-기획 문서(01~06, `screens/*.md`)와 2026-11-13 검토 결정(D32~)을 개발 관점으로 옮긴 문서다. **무엇을** 만드는지는 기획 문서, **어떻게** 만드는지는 이 문서가 기준이다.
+기획 문서(01~06, `screens/*.md`)와 검토 결정(D32~D86)을 개발 관점으로 옮긴 문서다. **무엇을** 만드는지는 기획 문서, **어떻게** 만드는지는 이 문서가 기준이다.
 
-- 기술 스택은 아직 미정이다(`open-questions.md`). 이 문서는 스택과 무관한 설계(데이터 모델, API 계약, 상태 전이, 연동 방식)만 다룬다. 테이블·필드·엔드포인트 이름은 제안이며, 스택 확정 시 관례에 맞게 바꿔도 된다(의미는 유지).
+- 기술 스택: Flutter(앱) · Express(API) · PostgreSQL(DB) · Docker Compose(실행 환경) · Jenkins(CI/CD) (D67). 이 문서는 데이터 모델, API 계약, 상태 전이, 연동 방식을 다룬다. 테이블·필드·엔드포인트 이름은 제안이며, 구현 관례에 맞게 바꿔도 된다(의미는 유지).
 - 수치는 모두 설정값이다. 본문의 숫자는 기본값일 뿐 하드코딩하지 않는다(2절).
 - `TODO`는 미결 사항 또는 카카오 확인 대기 항목이다.
 
@@ -25,37 +25,53 @@
 | D42 | 초대장의 초대자는 항상 **생성자** | 초대장 화면 |
 | D43 | 대기 초대는 **링크에 종속**. 링크가 만료/무효되면 목록에서 자동 제외 | 대기 초대 조회 |
 | D44 | `NOTI_INVITE_RECEIVED` 삭제. `invite_inbox_open` 경로에서 `notification` 제거 | 알림, 분석 |
-| D45 | 지연 딥링크 미도입. Universal Link / App Link + 정적 랜딩 1장("설치 후 링크를 다시 눌러주세요") | 11절 |
-| D46 | 정적 랜딩 페이지는 WEB 제외 범위의 예외 | 11절 |
 | D47 | 생성자 탈퇴 시 만든 그룹 삭제(D13 유지) | 7.8절 |
-| D50 | 배너·공지사항·FAQ는 원격 설정 JSON으로 관리(개발자가 수정). 어드민 없음 | 신규 화면 `MOOHAPP_NOTICE_LIST` / `MOOHAPP_NOTICE_DETAIL` / `MOOHAPP_FAQ` |
+| D50 | 배너·FAQ는 원격 설정 JSON으로 관리(개발자가 수정). 어드민 없음 (공지는 D57) | 신규 화면 `MOOHAPP_FAQ` |
 | D51~D54 | MVP: Android 제외, 하단 탭 3개, 약관 필수 3개, 앱 권한 요청 없음 | 화면 · 약관 범위 |
-| D55 | 초대는 카카오톡 공유 + `iosExecutionParams`(토큰). 랜딩 · AASA · assetlinks 없음 (D45·D46 대체) | 1 · 8.4 · 11절 |
+| D55 | 초대는 카카오톡 공유 + `iosExecutionParams`(토큰). 지연 딥링크 · 랜딩 · AASA · assetlinks 없음 (D45·D46 대체) | 1 · 8.4 · 11절 |
 | D56 | 폐업 자동 삭제 시 멤버 알림함 `PLACE_AUTO_REMOVED` | 3.5 |
-| D57 | 공지 = 블로그 링크, FAQ = 앱 화면(원격 JSON) | 12절 `notices` 미사용 |
+| D57 | 공지 = 블로그 링크, FAQ = 앱 화면(원격 JSON) | 12절 `notices` 삭제 |
 | D61 | 탈퇴 시 Apple revoke + 카카오 · 네이버 · Google 연결 끊기 | 7.8 |
 | D63 | 서버: Oracle Cloud Always Free(춘천/서울). `config.json` · 배너 이미지도 이 서버 도메인에서 제공 | 1절 |
 | D66 | 내주변 · 위치 권한 · 위치기반서비스 약관 삭제 (MVP 이후 계획에서도 제외) | 약관 enum, 지도 검색 API, 7.3, 원격 설정 배너 타입 |
+| D67 | 기술 스택 확정 (Flutter · Express · PostgreSQL · Docker Compose · Jenkins) | 머리말 |
+| D68 | 이미지는 서버 디스크, API가 직접 업로드 받음. 1080px 재인코딩 · EXIF 제거 | 1절, 5.1 `/uploads`, 14절 |
+| D69 | D35는 카카오 데이터 저장 기능(그룹 맛집 저장 · 재조회)에만 적용 | 9절 |
+| D70 | DRAFT 토큰 삭제, 링크는 그룹 생성 시 발급, 재발급은 친구 초대 화면 | 3.4, 4, 5.5, 5.6, 7.11 |
+| D71 | 카톡 메시지 버튼 웹 폴백 = 블로그 iOS 안내 글 | 8.4 |
+| D72 | 알 수 없는 토큰 → `DISABLED` | 7.4 |
+| D73 | 멤버 내보내기 후 링크 자동 재발급 | 4, 5.5, 7.9 |
+| D74 | 다중 참여 결과 이동 · Toast 요약 | 7.5 |
+| D75 | 초대장 헤더 · 카드별 생성자 | 5.6 |
+| D76 | 초대장 자동 노출 없음, 마이 탭 점 뱃지 | 8.5 |
+| D77 | 검색 `[음식점] [카페]` 탭, 선택한 탭만 호출 | 3.6, 5.3 |
+| D78 | 그룹 상세 `[맛집 추가]` = 검색 추가 모드 | 5.5, 8.1 |
+| D79 | 그룹 맛집 삭제 `[되돌리기]` = 다시 추가 | 3.3, 5.5 |
+| D80 | 홈 최근 맛집 = 내 그룹에 최근 추가된 맛집 | 5.2 |
+| D81 | 랜덤 닉네임, 소셜 프로필 미수집, 닉네임 규칙 | 2.1, 3.1, 7.2 |
+| D82 | 탈퇴 시 재로그인 토큰으로 연결 끊기, provider 토큰 미저장 | 3.1, 5.1, 7.2, 7.8 |
+| D83 | 알림 90일 / 100개 정리 | 2.1, 3.5, 7.11 |
+| D84 | 환경설정: 탈퇴 · 앱 버전 · 오픈소스 라이선스 | 8.1 |
+| D85 | 맛집 상세 미니 지도 MVP 제외, 지도 SDK 없음 | 1절, 8.1, 10절 |
+| D86 | 분석 이벤트 정리 | 13절 |
 
 ---
 
 ## 1. 시스템 구성
 
 ```text
-┌──────────────────────┐        ┌──────────────────────────────────┐
-│  MOOH 앱 (iOS/Android) │──HTTPS──▶  MOOH API 서버                      │
-│  - 카카오맵 SDK(지도)   │        │  - 인증/세션, 그룹·초대·저장 로직    │
-│  - 소셜 로그인 SDK      │        │  - 카카오 로컬 API 프록시(키 보관)   │
-│  - 원격 설정 로더       │        │  - 폐업 확인 기록                    │
-└───────┬──────────────┘        └──────┬──────────────┬────────────┘
-        │ 지도 타일/마커                 │              │
-        ▼                               ▼              ▼
-   카카오맵 SDK 서버              카카오 로컬 API      DB / 오브젝트 스토리지
-                                                       (커버·프로필 이미지)
-┌──────────────────────────┐
-│ API 서버 도메인 (Oracle)     │  원격 설정 JSON(config.json), 배너 이미지
-│                            │  (초대 랜딩 · AASA · assetlinks 없음, D55)
-└──────────────────────────┘
+┌──────────────────────────┐         ┌───────────────────────────────────┐
+│  MOOH 앱 (iOS, Flutter)   │──HTTPS──▶  MOOH API 서버 (Express)           │
+│  - 소셜 로그인 SDK         │         │  - 인증/세션, 그룹·초대·저장 로직   │
+│  - 카카오 SDK(공유)        │         │  - 카카오 로컬 API 프록시(키 보관)  │
+│  - 원격 설정 로더          │         │  - 폐업 확인 기록, 이미지 재인코딩  │
+└──────────────────────────┘         └──────┬───────────────┬────────────┘
+                                             ▼               ▼
+                                    카카오 로컬 API    PostgreSQL · 서버 디스크
+                                                       (커버·프로필 이미지, D68)
+
+같은 서버 도메인(Oracle, D63): 원격 설정 JSON(config.json), 배너 이미지
+초대 랜딩 · AASA · assetlinks 없음(D55), 지도 SDK 없음(D85)
 ```
 
 **카카오 로컬 API는 서버에서만 호출한다.**
@@ -64,7 +80,7 @@
 - 저장 맛집 여부(`saved`) 표시를 서버가 응답에 합쳐 줄 수 있다.
 - 서버는 카카오 응답을 **저장·캐싱하지 않고** 가공해 바로 반환한다(`04-external-api.md` 3절). 프로세스 메모리 내 요청 단위 재사용만 허용.
 
-카카오맵 SDK(지도 표시)는 앱 네이티브 키로 앱에서 직접 사용한다.
+카카오 SDK(로그인 · 카카오톡 공유)는 앱 네이티브 키로 앱에서 직접 사용한다. 지도 SDK는 MVP에서 쓰지 않는다(D85).
 
 ---
 
@@ -79,12 +95,14 @@
 | `MAX_MEMBERS_PER_GROUP` | 20 | 생성자 포함 |
 | `GROUP_NAME_MAX_LENGTH` / `GROUP_DESC_MAX_LENGTH` | 15 / 15 | 앞뒤 공백 제거 후, 문자(grapheme) 단위 |
 | `INVITE_LINK_TTL_DAYS` | 3 | 활성화 시점부터 |
-| `INVITE_DRAFT_TTL_HOURS` | 24 | 그룹 생성 화면 임시 토큰 정리 |
 | `GROUP_PLACES_PAGE_SIZE` | 20 | 그룹 상세 페이지 = 카카오 재조회 단위 |
 | `PLACE_MISSING_DELETE_THRESHOLD` | 2 | 서로 다른 날 연속 미확인 횟수 |
 | `HOME_RECENT_GROUPS_MAX` / `HOME_RECENT_PLACES_MAX` / `HOME_FRIENDS_MAX` | 5 / 5 / 6 | |
 | `SHARED_BADGE_MIN_MEMBERS` | 2 | |
 | `RECENT_SEARCH_MAX` | 10 | 앱 로컬 |
+| `NICKNAME_MIN_LENGTH` / `NICKNAME_MAX_LENGTH` | 2 / 10 | 앞뒤 공백 제거 후, grapheme 단위, 이모지 불가 (D81) |
+| `NOTIFICATION_RETENTION_DAYS` / `NOTIFICATION_MAX_PER_USER` | 90 / 100 | 먼저 걸리는 기준으로 정리 (D83) |
+| `UPLOAD_MAX_BYTES` / `IMAGE_MAX_EDGE_PX` | 10MB / 1080 | JPEG · PNG · HEIC 입력 → JPEG 재인코딩 (D68) |
 
 ### 2.2. 요금제별 덮어쓰기 (D34)
 
@@ -121,8 +139,9 @@ users.plan_code DEFAULT 'FREE'
 ```text
 users
   id                PK
-  nickname          NOT NULL
-  profile_image_key NULL             -- 오브젝트 스토리지 키
+  status            ENUM(SIGNUP_PENDING, ACTIVE)  -- 약관 동의 전 SIGNUP_PENDING (7.2)
+  nickname          NOT NULL         -- 가입 시 랜덤 '모오'+숫자 4자리. 2~10자, 중복 허용 (D81)
+  profile_image_key NULL             -- 서버 디스크 파일 키 (D68)
   plan_code         FK plan_limits DEFAULT 'FREE'
   created_at, updated_at
 
@@ -131,7 +150,7 @@ social_accounts
   user_id           FK users ON DELETE CASCADE
   provider          ENUM(KAKAO, NAVER, APPLE, GOOGLE)
   provider_user_id  NOT NULL
-  apple_refresh_token NULL           -- 탈퇴 시 Apple 토큰 revoke 용 (암호화 저장)
+  -- provider 토큰은 저장하지 않는다. 탈퇴 시 재로그인으로 새로 받는다 (D82)
   UQ(provider, provider_user_id)     -- 계정 병합 없음: provider별 1계정
 
 user_agreements
@@ -191,18 +210,19 @@ group_places
 ```
 
 - 저장 금지 필드(주소, 전화, 카테고리, 응답 원문)는 컬럼 자체를 만들지 않는다.
-- 삭제(사용자 삭제·자동 삭제)는 **행 삭제**(D14/Q3 "즉시 삭제"). 분석용으로는 이벤트만 남긴다.
+- 삭제(사용자 삭제·자동 삭제)는 **행 삭제**(D14 "즉시 삭제"). 분석용으로는 이벤트만 남긴다.
+- 삭제 Toast의 `[되돌리기]`(D79)는 같은 맛집을 다시 추가하는 요청이다. `added_by` · `created_at`은 새 값이 된다.
 
 ### 3.4. 초대
 
 ```text
 invite_links
   id PK
-  group_id   FK groups NULL           -- DRAFT 동안 NULL
+  group_id   FK groups NOT NULL
   token      CHAR(22) UQ              -- 128bit 난수, base62. 추측 불가
   created_by FK users
-  status     ENUM(DRAFT, ACTIVE, EXPIRED, DISABLED, GROUP_DELETED)
-  activated_at NULL, expires_at NULL  -- expires_at = activated_at + TTL
+  status     ENUM(ACTIVE, EXPIRED, DISABLED, GROUP_DELETED)
+  activated_at, expires_at            -- expires_at = activated_at + TTL
   created_at
   INDEX(group_id, status)
 
@@ -216,7 +236,7 @@ pending_invites
   UQ(user_id, group_id)               -- 같은 그룹 재진입 시 link_id 갱신 + PENDING 복귀
 ```
 
-- 기획 문서의 링크 상태 `PENDING`은 대기 초대 상태와 이름이 겹쳐 **`DRAFT`로 바꿔 부른다**(의미 동일).
+- 링크는 그룹 생성 트랜잭션에서 `ACTIVE`로 발급한다. 임시(DRAFT) 토큰은 없다 (D70).
 - 그룹당 `ACTIVE` 링크는 최대 1개.
 - 만료는 배치로 상태를 바꾸지 않아도 되게 **`expires_at < now()`를 만료로 판정**한다. 표시용 상태 정리는 주기 배치로 한다.
 - 초대장 목록 = `pending_invites(PENDING)` ⋈ `invite_links(ACTIVE, 미만료)` ⋈ `groups(ACTIVE)`. 하나라도 어긋나면 자동 제외(D43, 8.2).
@@ -231,13 +251,14 @@ notifications
   reason    ENUM(OWNER_DELETED, OWNER_WITHDRAWN) NULL
   group_id  FK groups
   group_name_snapshot VARCHAR       -- 그룹 삭제 후에도 문구 표시
+  place_name_snapshot VARCHAR NULL  -- PLACE_AUTO_REMOVED 문구용 (D56)
   status    ENUM(UNREAD, READ)
   created_at
   INDEX(user_id, created_at DESC)
 ```
 
-- 보관 기간·최대 개수: `TODO` (`open-questions.md`). 결정되면 정리 배치 추가.
-- 폐업 자동 삭제 알림(D56): `type=PLACE_AUTO_REMOVED`, 그룹명 · 상호명은 스냅샷으로 저장(`group_name_snapshot` + `place_name_snapshot` 추가). 그 그룹의 현재 멤버 전원에게 생성
+- 보관: 90일 또는 사용자당 최근 100개 중 먼저 걸리는 기준 (D83). 정리는 7.11 배치.
+- 폐업 자동 삭제 알림(D56): `type=PLACE_AUTO_REMOVED`, 그룹명 · 상호명은 스냅샷 컬럼에 저장. 그 그룹의 현재 멤버 전원에게 생성
 
 ### 3.6. 앱 로컬 저장소 (서버 저장 안 함)
 
@@ -245,7 +266,8 @@ notifications
 |---|---|
 | 온보딩 완료 여부 | 기기 단위 (`screens/auth.md`) |
 | 최근 검색어 10개 | 기기 단위, 서버 불필요 |
-| 세션 토큰 | 보안 저장소(Keychain / Keystore) |
+| 검색 탭 선택(음식점 / 카페) | 마지막 선택 유지 (D77) |
+| 세션 토큰 | 보안 저장소(Keychain) |
 | 비밀 초대장에서 로그인 중인 초대 토큰 | 로그인 완료 후 자동 참여용 (7.5) |
 
 ---
@@ -257,9 +279,8 @@ notifications
 멤버십        (참여) ─▶ ACTIVE ──(나가기)──▶ LEFT
                           └──(내보내기 / 그룹 삭제)──▶ REMOVED
               LEFT·REMOVED ──(새 링크로 재참여)──▶ ACTIVE
-초대 링크      DRAFT ──(그룹 생성 완료)──▶ ACTIVE ──(expires_at 경과)──▶ EXPIRED
-              DRAFT ──(24h 경과, 정리 배치)──▶ 삭제
-              ACTIVE ──(수동 재발급)──▶ DISABLED
+초대 링크      (그룹 생성 완료, D70) ─▶ ACTIVE ──(expires_at 경과)──▶ EXPIRED
+              ACTIVE ──(수동 재발급 / 멤버 내보내기 후 자동 재발급, D73)──▶ DISABLED
               ACTIVE·EXPIRED ──(그룹 삭제)──▶ GROUP_DELETED
               EXPIRED ──(생성자가 초대 화면 진입: 자동 재발급, D41)──▶ (새 링크 ACTIVE)
 대기 초대      PENDING ──(참여)──▶ JOINED
@@ -286,22 +307,22 @@ notifications
 | 메서드 | 경로 | 설명 |
 |---|---|---|
 | GET | `/app/bootstrap` (비인증) | 최소 지원 버전, 기능 플래그, 원격 설정 URL |
-| POST | `/auth/social` (비인증) | `{provider, token}` → `{accessToken, refreshToken, isNewUser}`. 신규면 약관 전까지 `signupPending` 상태 |
+| POST | `/auth/social` (비인증) | `{provider, token}` → `{accessToken, refreshToken, isNewUser}`. 신규면 약관 전까지 `SIGNUP_PENDING` 상태 |
 | POST | `/auth/signup` | 약관 동의 `{agreements:[AGE_14, SERVICE, PRIVACY]}` → 가입 확정. 필수 3개 누락 시 400 |
 | POST | `/auth/refresh` (비인증) | 토큰 갱신. 실패 → 앱은 세션 만료 Dialog |
 | POST | `/auth/logout` | refresh 토큰 폐기 |
 | GET | `/me` | 프로필, `limits`, 그룹 수, 대기 초대 수, 안 읽은 알림 수 |
-| PATCH | `/me` | 닉네임·프로필 이미지 키 |
+| PATCH | `/me` | 닉네임(2~10자, 이모지 불가, D81)·프로필 이미지 키 |
 | GET | `/me/withdraw-preview` | 삭제될 내 그룹 수 `{ownedGroupCount}` (탈퇴 Dialog `{n}`) |
-| DELETE | `/me` | 회원 탈퇴 (7.8) |
-| POST | `/uploads` | 이미지 업로드용 서명 URL 발급 `{purpose: COVER|PROFILE}` |
+| DELETE | `/me` | 회원 탈퇴 `{provider, token}` — 탈퇴 직전 재로그인으로 받은 토큰 (7.8, D82) |
+| POST | `/uploads` | multipart 이미지 업로드 `{purpose: COVER|PROFILE}` → `{imageKey}`. 10MB 이하 JPEG·PNG·HEIC, 서버가 긴 변 1080px JPEG 재인코딩 + EXIF 제거 (D68) |
 
 ### 5.2. 홈
 
 | 메서드 | 경로 | 설명 |
 |---|---|---|
 | GET | `/home/recent-groups` | 최근 수정순 5개 |
-| GET | `/home/recent-places` | 내 그룹 맛집 최근 저장순, 장소 ID 기준 중복 제거 5개 + 카카오 재조회 결과 + 저장된 그룹 태그 |
+| GET | `/home/recent-places` | 내 그룹에 최근 추가된 맛집(추가한 사람 무관, D80), 장소 ID 기준 중복 제거 5개 + 카카오 재조회 결과 + 저장된 그룹 태그 |
 | GET | `/home/friends` | 7.10 |
 | GET | `/friends/{userId}/shared-groups` | 함께 참여 중인 그룹 바텀시트 |
 
@@ -311,7 +332,7 @@ notifications
 
 | 메서드 | 경로 | 설명 |
 |---|---|---|
-| GET | `/search/places?query=&page=` | 키워드 검색. 공백만 → 400 (앱에서 먼저 차단). 응답에 `saved` 플래그 |
+| GET | `/search/places?query=&category=FD6\|CE7&page=` | 키워드 검색, 선택한 탭의 카테고리만 (D77). 공백만 → 400 (앱에서 먼저 차단). 응답에 `saved` 플래그 |
 | GET | `/places/{kakaoPlaceId}?name=&x=&y=` | 맛집 상세 재조회. 저장된 맛집이면 서버가 이름·좌표를 DB에서 채움. 못 찾으면 `404 PLACE_NOT_FOUND` → D38 Toast |
 | GET | `/places/{kakaoPlaceId}/my-groups` | 이 맛집이 저장된 내 그룹 ID 목록 (그룹 선택 BS 초기 체크) |
 
@@ -346,17 +367,16 @@ notifications
 | 메서드 | 경로 | 권한 | 설명 |
 |---|---|---|---|
 | GET | `/groups?sort=RECENT\|NAME\|MEMBERS\|PLACES` | 본인 | 그룹 홈 |
-| POST | `/invite-links/draft` | 로그인 | 그룹 생성 화면 진입 시 DRAFT 토큰 발급 (그룹 수 상한 도달 시 409) |
-| POST | `/groups` | 로그인 | `{name, description, coverImageKey?, draftToken}` → 그룹 + OWNER 멤버십 + 링크 ACTIVE 확정 |
+| POST | `/groups` | 로그인 | `{name, description, coverImageKey?}` → 그룹 + OWNER 멤버십 + ACTIVE 링크 발급 (D70). 그룹 수 상한 도달 시 409 |
 | GET | `/groups/{id}` | 멤버 | 헤더·탭 카운트(`placeCount`, `memberCount`, `limits`), 내 역할 |
 | PATCH | `/groups/{id}` | 생성자 | 이름·설명·커버 |
 | DELETE | `/groups/{id}` | 생성자 | 7.7 |
 | POST | `/groups/{id}/leave` | 멤버(OWNER 제외) | 나가기 |
 | GET | `/groups/{id}/places?cursor=` | 멤버 | 20개씩 + 카카오 재조회 결과 병합 (7.6) |
-| POST | `/groups/{id}/places` | 멤버 | 그룹 상세 `[맛집 추가]` 단건 추가 |
+| POST | `/groups/{id}/places` | 멤버 | `{kakaoPlaceId, placeName, placeUrl}` 단건 추가 — 검색 추가 모드(D78) · 삭제 `[되돌리기]`(D79) |
 | DELETE | `/groups/{id}/places/{kakaoPlaceId}` | 멤버 | 삭제. 이미 없으면 204 |
 | GET | `/groups/{id}/members` | 멤버 | 생성자 먼저, 이후 참여순 |
-| DELETE | `/groups/{id}/members/{userId}` | 생성자 | 내보내기 (본인 불가). 이미 나간 대상이면 204 |
+| DELETE | `/groups/{id}/members/{userId}` | 생성자 | 내보내기 (본인 불가). 이미 나간 대상이면 204. 성공 시 링크 자동 재발급 (D73, 7.9) |
 | GET | `/groups/{id}/map-places` | 멤버 | `TODO` `place_coords_enabled` 시에만 (D39). 저장 좌표로 마커 |
 
 ### 5.6. 초대
@@ -364,10 +384,10 @@ notifications
 | 메서드 | 경로 | 권한 | 설명 |
 |---|---|---|---|
 | GET | `/groups/{id}/invite-link` | **생성자** (D40) | 현재 링크. 만료면 자동 재발급 후 반환 (D41) |
-| POST | `/groups/{id}/invite-link/reissue` | 생성자 | 기존 ACTIVE → DISABLED, 새 링크 발급 |
+| POST | `/groups/{id}/invite-link/reissue` | 생성자 | 친구 초대 화면 `[새 링크 만들기]`. 기존 ACTIVE → DISABLED, 새 링크 발급 (D70) |
 | GET | `/invites/{token}/resolve` (비인증 허용) | - | 링크 진입 판정 (7.4). 로그인 상태면 대기 초대 등록까지 수행 |
 | GET | `/invites/{token}/preview` (비인증) | - | 비밀 초대장: 그룹 요약 + 멤버 목록(닉네임·프로필·역할) |
-| GET | `/me/invites` | 로그인 | 초대장 목록 (D43 필터 적용). 초대자 = 생성자 (D42) |
+| GET | `/me/invites` | 로그인 | 초대장 목록 (D43 필터 적용). 그룹별 생성자 닉네임 포함 — 카드 `{생성자}님의 그룹` (D42 · D75) |
 | POST | `/me/invites/join` | 로그인 | `{groupIds:[...]}` 다중 참여, 그룹별 결과 반환 (7.5) |
 | POST | `/invites/{token}/join` | 로그인 | 비밀 초대장 경유 단건 참여 (로그인 직후 자동 호출) |
 | POST | `/me/invites/reject` | 로그인 | `{groupIds:[...]}` 거절(휴지통) |
@@ -425,11 +445,11 @@ notifications
 
 1. 앱이 provider SDK로 토큰 획득 → `POST /auth/social`
 2. 서버가 provider 토큰 검증 → `social_accounts`로 사용자 조회
-3. 없으면 `signupPending` 사용자 생성, `isNewUser=true` → 앱은 약관 화면
+3. 없으면 `SIGNUP_PENDING` 사용자 생성, `isNewUser=true` → 앱은 약관 화면
 4. `POST /auth/signup`: 필수 약관(`AGE_14`, `SERVICE`, `PRIVACY`) 확인
-5. 약관 화면 `[X]`: 가입 중단. `signupPending` 사용자는 24시간 후 정리 배치로 삭제
+5. 약관 화면 `[X]`: 가입 중단. `SIGNUP_PENDING` 사용자는 24시간 후 정리 배치로 삭제
 
-Apple 로그인은 `authorization_code`로 refresh token을 받아 암호화 저장한다(탈퇴 시 revoke 필수, 앱스토어 심사).
+provider 토큰은 저장하지 않는다. 탈퇴 때 재로그인으로 새로 받아 revoke · unlink한다(7.8, D82). 신규 사용자 닉네임은 랜덤 `모오` + 숫자 4자리, 프로필 이미지는 없음(D81).
 
 ### 7.3. (삭제 — D66, 위치 사후 동의 없음)
 
@@ -439,9 +459,9 @@ Apple 로그인은 `authorization_code`로 refresh token을 받아 암호화 저
 
 | 순서 | 조건 | 응답 `result` | 앱 처리 |
 |---|---|---|---|
-| 1 | 토큰 없음 / `GROUP_DELETED` 또는 그룹 DELETED | `GROUP_DELETED` | Toast, 현재 화면 유지(첫 진입이면 홈, 비로그인은 온보딩/로그인) |
+| 1 | `GROUP_DELETED` 또는 그룹 DELETED | `GROUP_DELETED` | Toast, 현재 화면 유지(첫 진입이면 홈, 비로그인은 온보딩/로그인) |
 | 2 | `EXPIRED` 또는 `expires_at` 경과 | `EXPIRED` | 만료 Dialog → 홈 (비로그인 온보딩/로그인) |
-| 3 | `DISABLED` | `DISABLED` | 무효 Dialog → 동일 |
+| 3 | `DISABLED` 또는 토큰 없음(오타 · 알 수 없는 토큰, D72) | `DISABLED` | 무효 Dialog → 동일 |
 | 4 | 로그인 + 이미 멤버/생성자 | `ALREADY_MEMBER` | 그룹 상세 |
 | 5 | 로그인 + 유효 | `INBOX` | 대기 초대 upsert(link_id 갱신) → 초대장(이 그룹 기본 체크) |
 | 6 | 비로그인 + 유효 | `PREVIEW` | 비밀 초대장 |
@@ -460,7 +480,7 @@ Apple 로그인은 `authorization_code`로 refresh token을 받아 암호화 저
 5. 내 그룹 수 → `GROUP_LIMIT_EXCEEDED` (요청 순서대로 처리, 상한 도달 이후 그룹은 전부 이 코드)
 6. 멤버십 ACTIVE(재참여면 행 복구), `member_count++`, `groups.updated_at` 갱신, 대기 초대 `JOINED`
 
-응답 후 이동: 1개 성공 → 그 그룹 상세, 2개 이상 → 그룹 홈 (⚠️ 기획 확인 필요 항목, 현재 안 그대로).
+응답 후 이동 (D74): 1개 성공 → 그 그룹 상세, 2개 이상 → 그룹 홈. 일부 실패 → `MOOHAPP_TOAST_INVITE_JOIN_PARTIAL`, 전부 실패 → `MOOHAPP_TOAST_INVITE_JOIN_FAIL`(1개만 선택했으면 해당 코드의 Dialog).
 
 비밀 초대장 경로(`POST /invites/{token}/join`): 앱이 로그인 시작 전에 토큰을 로컬에 보관 → 로그인(신규면 약관까지) 완료 직후 자동 호출 → 성공 시 그룹 상세, 실패 시 해당 Dialog → 홈. 로그인 취소 시 토큰 폐기. 대기 초대 행을 거치지 않고 위 1~6 검증만 수행한다.
 
@@ -495,20 +515,21 @@ Apple 로그인은 `authorization_code`로 refresh token을 받아 암호화 저
 
 ### 7.8. 회원 탈퇴
 
-1. 내가 만든 ACTIVE 그룹마다 7.7 수행(`reason=OWNER_WITHDRAWN`) (D47)
-2. 참여 중인 그룹 멤버십 → `LEFT`, 해당 그룹 `member_count--`
-3. `group_places.added_by` → NULL (다른 멤버의 그룹 데이터는 유지)
-4. Apple 계정이면 토큰 revoke, 각 provider 연결 해제(가능한 provider만)
-5. 개인 데이터 파기: `users`(닉네임·프로필), `social_accounts`, `user_agreements`, `pending_invites`, `notifications`, 세션 전부 삭제. 프로필 이미지 비동기 삭제
-6. `group_members`에는 탈퇴자 행이 남지 않도록 삭제(개인 식별 가능 데이터 최소화)
+1. 앱: 탈퇴 확인 Dialog → 가입한 provider로 재로그인 → `DELETE /me {provider, token}` (D82). 서버는 provider 토큰을 검증하고, 그 계정의 사용자가 요청한 사용자와 같은지 확인한다. 다르면 `409 WITHDRAW_REAUTH_MISMATCH`
+2. 내가 만든 ACTIVE 그룹마다 7.7 수행(`reason=OWNER_WITHDRAWN`) (D47)
+3. 참여 중인 그룹의 멤버십 행 삭제(탈퇴자 행을 남기지 않음), 해당 그룹 `member_count--`
+4. `group_places.added_by` → NULL (다른 멤버의 그룹 데이터는 유지)
+5. 받은 토큰으로 연결 끊기: Apple revoke, 카카오 · 네이버 · Google unlink (D61). 요청 안에서 재시도하고, 그래도 실패하면 개인정보 없이 실패 건만 기록. 실패해도 파기는 진행
+6. 개인 데이터 파기: `users`(닉네임·프로필), `social_accounts`, `user_agreements`, `pending_invites`, `notifications`, 세션 전부 삭제. 프로필 이미지 파일 비동기 삭제
 7. 복구 불가. 법령상 보관 의무 데이터가 생기면(유료화 시 결제 기록 등) 별도 분리 보관 `TODO`
 
-### 7.9. 링크 자동 재발급 (D41)
+### 7.9. 링크 자동 재발급 (D41 · D73)
 
 `GET /groups/{id}/invite-link`(생성자 전용):
 - ACTIVE·미만료 → 그대로 반환
 - 만료 → 기존 링크 `EXPIRED` 확정, 새 `ACTIVE` 링크 발급(`activated_at=now`) 후 반환
-- 수동 `[재발급]`은 `reissue` 엔드포인트만. 확인 Dialog는 앱에서
+- 수동 재발급은 친구 초대 화면 `[새 링크 만들기]` → `reissue` 엔드포인트 (D70). 확인 Dialog는 앱에서
+- 멤버 내보내기 성공 시 같은 트랜잭션에서 ACTIVE 링크 → `DISABLED`, 새 ACTIVE 발급 (D73). 기존 링크로 쌓인 대기 초대는 조회 조건으로 자동 제외(D43)
 
 ### 7.10. 함께하는 친구
 
@@ -524,10 +545,9 @@ Apple 로그인은 `authorization_code`로 refresh token을 받아 암호화 저
 
 | 작업 | 주기 | 내용 |
 |---|---|---|
-| DRAFT 링크 정리 | 1시간 | 생성 후 24시간 지난 DRAFT 삭제 |
 | 링크 만료 상태 정리 | 1일 | `expires_at` 경과 ACTIVE → EXPIRED (판정은 시각 기준이라 표시용) |
-| 가입 미완료 사용자 정리 | 1일 | `signupPending` 24시간 경과 삭제 |
-| 알림 정리 | `TODO` | 보관 기간 결정 후 |
+| 가입 미완료 사용자 정리 | 1일 | `SIGNUP_PENDING` 24시간 경과 삭제 |
+| 알림 정리 | 1일 | 90일 지난 알림 삭제 + 사용자당 최근 100개 초과분 삭제 (D83) |
 
 ---
 
@@ -538,37 +558,49 @@ Apple 로그인은 `authorization_code`로 refresh token을 받아 암호화 저
 | 화면 ID | 변경 |
 |---|---|
 | `MOOHAPP_GROUP_MAP` | 추가, `TODO` `place_coords_enabled` 시에만. 아니면 그룹 상세 `[지도]` 아이콘 미노출 (D39) |
-| `MOOHAPP_NOTICE_LIST` / `MOOHAPP_NOTICE_DETAIL` | 추가. 마이 > 공지사항 (D50) |
-| `MOOHAPP_FAQ` | 추가. 마이 > FAQ, 질문 목록 + 아코디언 (D50) |
-| `MOOHAPP_GROUP_INVITE` | 생성자 전용으로 변경 (D40) |
+| `MOOHAPP_FAQ` | 추가. 마이 > FAQ, 질문 목록 + 아코디언 (D50 · D57) |
+| `MOOHAPP_SEARCH` | 결과 `[음식점] [카페]` 탭 (D77), 그룹 상세에서 여는 추가 모드 (D78) |
+| `MOOHAPP_PLACE_DETAIL` | 미니 지도 제거 (D85) |
+| `MOOHAPP_GROUP_CREATE` / `MOOHAPP_GROUP_EDIT` | 초대 링크 칸 제거 (D70) |
+| `MOOHAPP_SETTINGS` | 회원 탈퇴 · 앱 버전 · 오픈소스 라이선스 (D84) |
+| `MOOHAPP_GROUP_INVITE` | 생성자 전용 (D40). 유효기간 표시 + `[새 링크 만들기]` (D70) |
 
 ### 8.2. 데이터 갱신 규칙
 
 - 서버 데이터는 화면 진입·포그라운드 복귀·변경 완료 시 재조회(`02-policies.md` 11절).
 - 카카오 유래 데이터(주소·전화·카테고리·검색 결과)는 **화면 메모리에만** 보관한다. 디스크 캐시·HTTP 캐시 금지(응답에 `Cache-Control: no-store`).
-- 뒤로가기 복원(검색어·결과·스크롤·지도 중심·줌)은 화면 상태 보존으로 처리하고 재호출하지 않는다.
+- 뒤로가기 복원(검색어·검색 탭·결과·스크롤)은 화면 상태 보존으로 처리하고 재호출하지 않는다.
 - 낙관적 업데이트는 쓰지 않는다. 변경은 서버 응답 후 반영(실패 시 이전 상태 유지 정책과 일치).
 
 ### 8.3. 상한 표시
 
 탭 표기 `맛집 N/{max}` · `멤버 N/{max}`, FAB·CTA 비활성 판단은 모두 서버가 준 `limits`로 한다. 문구의 숫자도 `{max}` 변수로 치환한다(요금제 대비).
 
-> **D55 (2026-11-19)**: 아래 8.4의 Universal Link · 랜딩 방식은 **쓰지 않는다.** 카카오톡 공유 메시지 버튼 → `kakao{네이티브앱키}://kakaolink?token=...` 로 앱 실행 → resolve(7.4). 앱 미설치 시 카카오가 App Store로 보낸다. 카카오 콘솔에서 카카오톡 공유 사용 설정 · iOS `LSApplicationQueriesSchemes`에 `kakaolink` 필요.
-
-### 8.4. 딥링크 라우팅
+### 8.4. 초대 진입 라우팅 (D55)
 
 ```text
-https://mooh.app/invite/{token}
-  ├─ 앱 설치됨 → Universal Link / App Link로 앱 실행 → resolve (7.4)
-  └─ 미설치 → 랜딩 페이지 (11절)
-앱 실행 중 링크 수신 → 현재 화면 위에서 resolve (실패 Toast는 현재 화면 유지)
+카카오톡 공유 메시지 버튼
+  ├─ iOS + 앱 설치 → kakao{네이티브앱키}://kakaolink?token=... 로 앱 실행 → resolve (7.4)
+  ├─ iOS + 미설치 → 카카오가 App Store로 이동 → 설치 · 로그인 후 메시지를 다시 눌러야 함
+  └─ Android · PC 카톡 → 버튼 webUrl / mobileWebUrl = 블로그 "MOOH 소개 · 현재 iOS 전용" 글 (D71)
+앱 실행 중 수신 → 현재 화면 위에서 resolve (실패 Toast는 현재 화면 유지)
 ```
+
+- 카카오 콘솔: 카카오톡 공유 사용 설정, Web 플랫폼에 블로그 도메인 등록(`TODO` 등록 가능 여부 확인)
+- iOS `LSApplicationQueriesSchemes`에 `kakaolink`
+- Universal Link · 랜딩 페이지 · AASA · assetlinks 없음
+
+### 8.5. 뱃지 (D76)
+
+- 하단 마이 탭: 대기 초대 또는 안 읽은 알림이 하나라도 있으면 점(•) 1개
+- 마이 화면: 🔔 아이콘에 점, `mooh: 초대장` 메뉴에 대기 초대 개수
+- 값은 `GET /me`의 대기 초대 수 · 안 읽은 알림 수. 초대장은 자동으로 열지 않는다
 
 ---
 
-## 9. 카카오 연동 선행 작업 (D35)
+## 9. 카카오 연동 선행 작업 (D35 · D69)
 
-개발 착수 전에 끝낸다.
+카카오 데이터를 저장하는 기능(그룹 맛집 저장 · 재조회)을 구현하기 전에 끝낸다. 인증 · 그룹 · 초대 · 알림은 먼저 진행해도 된다.
 
 | 항목 | 결과에 따른 분기 |
 |---|---|
@@ -590,7 +622,7 @@ https://mooh.app/invite/{token}
 | 400 | `VALIDATION_FAILED` | (필드 인라인 안내) |
 | 401 | `SESSION_EXPIRED` | `MOOHAPP_DIALOG_SESSION_EXPIRED` |
 | 403 | `GROUP_FORBIDDEN` | `MOOHAPP_DIALOG_GROUP_FORBIDDEN` |
-| 404 | `PLACE_NOT_FOUND` | `MOOHAPP_TOAST_PLACE_LOAD_FAIL` ⚠️ (신규, D38) |
+| 404 | `PLACE_NOT_FOUND` | `MOOHAPP_TOAST_PLACE_LOAD_FAIL` (D38) |
 | 409 | `GROUP_LIMIT_EXCEEDED` | `MOOHAPP_DIALOG_GROUP_LIMIT` (문구 `{max}`개) |
 | 409 | `GROUP_MEMBER_LIMIT_EXCEEDED` | `MOOHAPP_DIALOG_GROUP_MEMBER_LIMIT` |
 | 409 | `GROUP_PLACE_LIMIT_EXCEEDED` | `MOOHAPP_TOAST_GROUP_PLACE_LIMIT` (문구 `{max}`개) |
@@ -598,28 +630,16 @@ https://mooh.app/invite/{token}
 | 410 | `GROUP_DELETED` | `MOOHAPP_TOAST_GROUP_DELETED` |
 | 410 | `INVITE_EXPIRED` | `MOOHAPP_DIALOG_INVITE_EXPIRED` |
 | 410 | `INVITE_DISABLED` | `MOOHAPP_DIALOG_INVITE_DISABLED` |
-| 502/503 | `KAKAO_UNAVAILABLE` | `MOOHAPP_TOAST_MAP_LOAD_FAIL` 또는 화면별 실패 처리 |
+| 409 | `WITHDRAW_REAUTH_MISMATCH` | `MOOHAPP_DIALOG_WITHDRAW_REAUTH_MISMATCH` (D82) |
+| 400 | `IMAGE_INVALID` | 커버: 기본 이미지로 계속 생성 / 프로필: `MOOHAPP_TOAST_PROFILE_UPDATE_FAIL` (D68) |
+| 502/503 | `KAKAO_UNAVAILABLE` | 화면별 실패 처리 (검색: 기존 결과 유지 + 재시도, 상세: `MOOHAPP_TOAST_PLACE_LOAD_FAIL`) |
 | - | (네트워크 실패) | `MOOHAPP_TOAST_NETWORK_ERROR` |
-
-`05-messages.md` 수정 필요: 그룹 수 Dialog·맛집 수 Toast 문구를 `{max}` 변수로, `MOOHAPP_TOAST_PLACE_LOAD_FAIL` 추가, `NOTI_INVITE_RECEIVED` 삭제.
 
 ---
 
-> **D55 (2026-11-19)로 이 절은 사용하지 않는다.** 원격 설정 JSON(`/config.json`)만 API 서버 도메인에서 제공한다.
+## 11. (삭제 — D55, 초대 랜딩 페이지 없음)
 
-## 11. 초대 랜딩 페이지 (D45, D46)
-
-`mooh.app` 정적 호스팅. 범위는 아래뿐이다.
-
-| 경로 | 내용 |
-|---|---|
-| `/invite/{token}` | MOOH 로고·캐릭터, "MOOH 앱에서 초대를 확인하세요", App Store / Play Store 버튼, **"설치 후 이 링크를 다시 눌러주세요"** 안내. 그룹 정보는 표시하지 않음(서버 호출 없음) |
-| `/.well-known/apple-app-site-association` | iOS Universal Link, `/invite/*` |
-| `/.well-known/assetlinks.json` | Android App Link |
-| `/config.json` | 원격 설정 (12절) |
-
-- 랜딩 문구는 ⚠️초안.
-- 앱 설치된 사용자는 OS가 링크를 앱으로 바로 열기 때문에 이 페이지를 보지 않는다.
+원격 설정 JSON(`/config.json`)과 배너 이미지만 API 서버 도메인에서 제공한다(12절).
 
 ---
 
@@ -637,15 +657,12 @@ https://mooh.app/invite/{token}
       "label": "이번 주 추천",
       "title": "을지로 노포 투어",
       "subtitle": "오래된 맛집 모음",
-      "imageUrl": "https://mooh.app/assets/banner1.png",
+      "imageUrl": "https://{API 도메인}/assets/banner1.png",
       "target": { "kakaoPlaceId": "12345", "placeName": "..." },
       "startAt": "2026-11-01T00:00:00+09:00",
       "endAt": "2026-11-30T23:59:59+09:00"
     },
     { "id": "b2", "type": "LINK", "title": "...", "target": { "url": "https://blog.naver.com/..." } }
-  ],
-  "notices": [
-    { "id": "n1", "title": "MOOH 출시 안내", "body": "본문(마크다운)", "publishedAt": "2026-11-20T10:00:00+09:00", "pinned": true }
   ],
   "faq": [
     { "id": "f1", "category": "그룹", "question": "그룹은 몇 개까지 만들 수 있나요?", "answer": "..." }
@@ -654,7 +671,7 @@ https://mooh.app/invite/{token}
 ```
 
 - 배너는 기간 밖이거나 `target`이 비어 있으면 노출하지 않는다.
-- 공지 정렬: `pinned` 먼저, 이후 `publishedAt` 내림차순. 상세는 `body` 마크다운 렌더링.
+- 공지사항은 JSON에 없다. 마이 > 공지사항은 블로그 공지 카테고리 링크 (D57).
 - 스키마가 바뀌면 `version`을 올리고, 앱은 모르는 필드·타입을 무시한다.
 
 ---
@@ -662,19 +679,21 @@ https://mooh.app/invite/{token}
 ## 13. 분석 이벤트 변경분
 
 - `invite_inbox_open`의 진입 경로: `link` / `my` (D44, `notification` 제거)
-- 추가: `notice_view`, `faq_view`
+- 공지: 앱 화면이 없으므로 `notice_view` 대신 `notice_open`(블로그 링크 열기, D57 · D86)
+- 추가: `faq_view`, `group_place_remove_undo`, `invite_link_reissue`(`source`: `manual` / `auto_expired` / `auto_member_removed`), `search_tab_change`, `profile_update`, `logout`, `withdraw_complete` (D86)
+- `group_place_add`에 `source`: `select_bs` / `add_mode` (D78)
 - `group_place_auto_removed`: 플래그 on 이후에만 발생
-- 분석 도구: `TODO` (스택 확정 시)
+- 분석 도구: `TODO`
 
 ---
 
 ## 14. 보안 · 개인정보 체크리스트
 
-- [ ] 카카오 REST 키·소셜 시크릿은 서버에만. 앱에는 카카오맵 네이티브 키·provider 클라이언트 ID만
+- [ ] 카카오 REST 키·소셜 시크릿은 서버에만. 앱에는 카카오 네이티브 앱 키·provider 클라이언트 ID만
 - [ ] 초대 토큰 128bit 난수, 비인증 엔드포인트 rate limit
 - [ ] 비밀 초대장 응답은 닉네임·프로필·역할만
-- [ ] 이미지 업로드는 서명 URL + 크기·형식 제한
-- [ ] 탈퇴 시 개인 데이터 즉시 파기, Apple 토큰 revoke, 카카오 · 네이버 · Google 연결 끊기 (D61)
+- [ ] 이미지 업로드는 API가 직접 받아 10MB · 형식(JPEG · PNG · HEIC) 제한, 긴 변 1080px 재인코딩, **EXIF(GPS 포함) 제거** (D68)
+- [ ] 탈퇴 시 개인 데이터 즉시 파기, Apple 토큰 revoke, 카카오 · 네이버 · Google 연결 끊기 (D61). provider 토큰은 저장하지 않고 탈퇴 때 재로그인으로 받는다 (D82)
 - [ ] 카카오 유래 데이터 `no-store`, 로그에 응답 원문 남기지 않기
 
 ---
@@ -683,11 +702,9 @@ https://mooh.app/invite/{token}
 
 | 항목 | 막히는 부분 |
 |---|---|
-| 기술 스택 | 전체 구현 |
-| 카카오 데브톡 회신 (좌표 저장 등) | 7.6 재조회 방식, `GROUP_MAP`, 자동 삭제 |
+| 카카오 데브톡 회신 (좌표 저장 등) | 그룹 맛집 저장 · 재조회(D69), 7.6 재조회 방식, `GROUP_MAP`, 자동 삭제 |
 | 카카오 쿼터 계산 | 7.6 페이지 크기 |
-| 알림 보관 기간·개수 | 7.11 알림 정리 |
-| ~~폐업 자동 삭제 알림 여부~~ | D56으로 해소 |
-| 다중 참여 후 이동 위치 | 7.5 |
+| 그룹 지도 구현 방식 (Flutter 공식 카카오맵 SDK 없음) | `GROUP_MAP` (D39 · D85) |
+| 카카오 Web 플랫폼에 블로그 도메인 등록 가능 여부 | 8.4 웹 폴백 (D71) |
 | 요금제 다운그레이드 처리 | 2.2 |
 | 분석 도구 | 13절 |
