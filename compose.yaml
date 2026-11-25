@@ -1,0 +1,54 @@
+# 로컬 개발용: docker compose up --build -d
+name: moo
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-moo_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-moo_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - db-net
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./backend
+    environment:
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER:-moo_user}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      DB_NAME: ${POSTGRES_DB:-moo_db}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      # 실제 폰에서 접속하려면 "0.0.0.0:3000:3000" 으로 바꾸고 방화벽 확인
+      - "127.0.0.1:${API_PORT:-3000}:3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - app-net
+      - db-net
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  app-net:
+  db-net:
+    internal: true # DB는 외부에서 직접 접근 불가, api 컨테이너를 통해서만 접근
