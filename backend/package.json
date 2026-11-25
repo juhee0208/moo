@@ -1,0 +1,23 @@
+{
+  "name": "moo-api",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "node --test",
+    "start": "node src/server.js",
+    "migrate": "node src/db/migrate.js",
+    "migrate:create": "node-pg-migrate create --migration-file-language sql"
+  },
+  "type": "commonjs",
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "express": "^5.3.0",
+    "node-pg-migrate": "^9.0.0",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "supertest": "^7.3.2"
+  },
+  "private": true
+}

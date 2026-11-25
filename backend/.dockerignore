@@ -1,0 +1,11 @@
+# test/ 는 test 스테이지에서만 쓰고 runtime 이미지에는 복사하지 않는다
+node_modules
+coverage
+.env
+.env.*
+.git
+npm-debug.log*
+.DS_Store
+Dockerfile
+.dockerignore
+*.md
